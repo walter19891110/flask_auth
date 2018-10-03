@@ -1,59 +1,8 @@
 # 身份令牌模块
 import time
 import itsdangerous
-from flask import jsonify
-from flask_restful import reqparse
-from . import token_api
 
 
-# ========================外部接口========================== #
-# ======================身份令牌接口========================= #
-@token_api.route('/verify_token', methods=['POST'])
-def verify_token_api():
-    """令牌验证，验证令牌的合法性
-    
-    :param token: 访问令牌
-    :return: 是否验证通过
-    """
-    # 设置参数解析器
-    r = reqparse.RequestParser()  #
-    r.add_argument('token', type=str, location='json')
-
-    args = r.parse_args()
-    token = args.get('token')
-    ret_code = 0
-    msg = 'OK'
-    if token is None:
-        ret_code = 1
-        msg = 'missing arguments!'
-        return jsonify({'ret_code': ret_code, 'msg': msg})
-
-    return jsonify(verify_token(token))
-
-
-@token_api.route('/update_token', methods=['POST'])
-def update_token_api():
-    """令牌更新，使用刷新令牌，请求新的访问令牌
-    
-    :param token: 刷新令牌
-    :return: 访问令牌
-    """
-
-    # 设置参数解析器
-    r = reqparse.RequestParser()  #
-    r.add_argument('token', type=str, location='json')
-
-    args = r.parse_args()
-    token = args.get('token')
-    if token is None:
-        ret_code = 1
-        msg = 'missing arguments!'
-        return jsonify({'ret_code': ret_code, 'msg': msg})
-
-    return jsonify(update_token(token))
-
-
-# =======================内部接口=========================== #
 def create_token(user, role, expires):
     """生成Token
 
@@ -127,7 +76,7 @@ def analysis_token(token):
     return {'ret_code': ret_code, 'msg': msg, 'user': data['user_id'], 'role': data['user_role']}
 
 
-def update_token(ref_token):
+def update_token(refresh_token):
     """刷新令牌
        使用刷新令牌，生成新的访问令牌
     :param ref_token: 刷新令牌
@@ -135,8 +84,8 @@ def update_token(ref_token):
     :return: 
         acc_token: 新的访问令牌
     """
-    print(ref_token)
-    res = analysis_token(ref_token)  # 解析刷新令牌
+    print(refresh_token)
+    res = analysis_token(refresh_token)  # 解析刷新令牌
     print(res)
     ret_code = 0
     msg = 'OK'
@@ -145,8 +94,8 @@ def update_token(ref_token):
 
     user = res.get('user')
     role = res.get('role')
-    acc_token = create_token(user, role, 20)
-    return {'ret_code': ret_code, 'msg': msg, 'access_token': acc_token}
+    access_token = create_token(user, role, 20)
+    return {'ret_code': ret_code, 'msg': msg, 'access_token': access_token}
 
 
 def verify_token(token):

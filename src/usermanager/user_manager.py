@@ -1,118 +1,11 @@
 # 用户管理模块
 
 from mytoken import my_token
-from flask import jsonify
-from flask_restful import reqparse
 from passlib.apps import custom_app_context as pwd_context
 from models.User import User
 from models.shared import db
-from . import user_manager_api
 
 
-# ========================外部接口========================== #
-@user_manager_api.route('/add_user', methods=['POST'])
-def add_user_api():
-    """添加用户
-
-    :return: 执行结果代码
-    {'ret_code': ret_code, 'msg': msg}
-    """
-
-    # 设置参数解析器
-    r = reqparse.RequestParser()  #
-    r.add_argument('username', type=str, location='json')
-    r.add_argument('password', type=str, location='json')
-    r.add_argument('userrole', type=str, location='json')
-    r.add_argument('userdesc', type=str, location='json')
-
-    args = r.parse_args()
-    result = add_user(dict(args.items()))
-    return jsonify(result)
-
-
-@user_manager_api.route('/modify_user', methods=['PUT'])
-def modify_user_api():
-    """修改用户信息
-
-    :return: 执行结果代码
-    {'ret_code': ret_code, 'msg': msg}
-    """
-
-    # 设置参数解析器
-    r = reqparse.RequestParser()  #
-    r.add_argument('username', type=str, location='json')
-    r.add_argument('userrole', type=str, location='json')
-    r.add_argument('userdesc', type=str, location='json')
-
-    args = r.parse_args()
-    result = modify_user(dict(args.items()))
-    return jsonify(result)
-
-
-@user_manager_api.route('/modify_password', methods=['PUT'])
-def modify_password_api():
-    """修改用户信息
-
-        :return: 执行结果代码
-        {'ret_code': ret_code, 'msg': msg}
-        """
-    # 设置参数解析器
-    r = reqparse.RequestParser()  #
-    r.add_argument('username', type=str, location='json')
-    r.add_argument('oldpwd', type=str, location='json')
-    r.add_argument('newpwd', type=str, location='json')
-
-    args = r.parse_args()
-    result = modify_password(dict(args.items()))
-    return jsonify(result)
-
-
-@user_manager_api.route('/del_user', methods=['DELETE'])
-def del_user_api():
-    """删除用户
-
-    :return: 执行结果代码
-    {'ret_code': ret_code, 'msg': msg}
-    """
-    # 设置参数解析器
-    r = reqparse.RequestParser()  #
-    r.add_argument('username', type=str, location='json')
-
-    args = r.parse_args()
-    result = del_user(dict(args.items()))
-    return jsonify(result)
-
-
-@user_manager_api.route('/get_user/<string:username>', methods=['GET'])
-def get_user_api(username):
-    """查询用户信息
-
-    :return: 执行结果代码、用户信息
-    {'ret_code': ret_code, 'msg': msg, 'username': user.username,
-     'userrole': user.userrole, 'userdesc': user.userdesc}
-    """
-
-    result = get_user(username.strip('\"'))
-    return jsonify(result)
-
-
-@user_manager_api.route('/login_success', methods=['PUT'])
-def login_success_api():
-    """
-    登录成功，更新登录状态，生成身份令牌，返回给用户
-    :param username:登录成功的用户名
-    :return: 身份令牌
-    """
-    # 设置参数解析器
-    r = reqparse.RequestParser()  #
-    r.add_argument('username', type=str, location='json')
-
-    args = r.parse_args()
-    result = login_success(dict(args.items()))
-    return jsonify(result)
-
-
-# ========================内部函数========================== #
 def encrypt_password(password):
     """密码散列
     
